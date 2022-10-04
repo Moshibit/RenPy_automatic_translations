@@ -43,6 +43,7 @@
 # Step 5. You will find the traditions in the 'tl_output' folder, check the 
 #         traditions and make the pertinent changes, replace the translations
 #         in the 'tl' folder.
+# Step 6. Remove this script from your project
 
 # NOTE: esta es una liga donde se encuentrasn los idiomas y sus códigoas ISO639-1
 # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
