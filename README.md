@@ -18,7 +18,7 @@ When your project is complete then use this script.
         language names must be lowercase.
 * Step 3. Make a copy of this file in the game folder of your project.
 * step 4. Open a prompt in the game folder of your project and run this file
-              $ python auto_translate.py [language]
+        ```$ python auto_translate.py [language]```
         where [language] is the ISO 639-1 code of the language of your project in lowercase.
 * Step 5. You will find the traditions in the 'tl_output' folder, check the 
         traditions and make the pertinent changes, replace the translations
