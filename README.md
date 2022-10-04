@@ -23,3 +23,4 @@ When your project is complete then use this script.
 * Step 5. You will find the traditions in the 'tl_output' folder, check the 
         traditions and make the pertinent changes, replace the translations
         in the 'tl' folder.
+* Step 6. Remove this script from your project
