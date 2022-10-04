@@ -6,11 +6,11 @@ requirements:
 2. libraries:
   - textblob
   
-      $ pip install textblob
+´´´$ pip install textblob´´´
   
   - pycontry 
   
-      $ pip inttall pycontry
+ ´´´$ pip inttall pycontry´´´
 
 When your project is complete then use this script.
 Step 1. Check spelling and syntax.
