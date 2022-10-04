@@ -4,9 +4,12 @@ Translate your Ren'Py projects with an AI
 requirements:
 1. Python
 2. libraries:
-  - textblob 
+  - textblob
+  
       $ pip install textblob
+  
   - pycontry 
+  
       $ pip inttall pycontry
 
 When your project is complete then use this script.
