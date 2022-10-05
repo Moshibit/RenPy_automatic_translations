@@ -10,7 +10,7 @@ requirements:
   
   - pycontry 
   
-```pip inttall pycontry```
+```pip install pycontry```
 
 When your project is complete then use this script.
 * Step 1. Check spelling and syntax.
