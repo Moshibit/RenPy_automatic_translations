@@ -40,10 +40,10 @@
 # step 4. Open a prompt in the game folder of your project and run this file
 #               $ python auto_translate.py [language]
 #         where [language] is the ISO 639-1 code of the language of your project in lowercase.
-# Step 5. You will find the translations files in the 'tl_output' folder, check the 
-#         translations and make the pertinent changes, replace the translations files
-#         in the 'tl' folder.
-# Step 6. Remove this script from your project
+# Step 5. You will find the translations files in the 'tl_output' folder, 
+#         replace the translations files in the 'tl' folder.
+# Step 6. Remove this script and the 'tl_output' folder from your project.
+# Step 7. Check the translations files and make the pertinent changes.
 
 # NOTE: This is a link where you can find the languages and their ISO639-1 codes
 # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
@@ -51,6 +51,7 @@
 
 # *** Imports ***
 import os
+import shutil
 import re
 import pycountry
 import argparse
@@ -83,8 +84,7 @@ def argument_paser():
 
 def get_languages_dict():
     """ Diccionario de idiomas 
-    { 'idioma' : 'ISO639-1' }
-    """
+    { 'idioma' : 'ISO639-1' } """
     # primero obtenemos los valores, las claves ISO
     values = [lang.alpha_2 for lang in pycountry.languages if hasattr(lang, 'alpha_2')]
 
@@ -101,8 +101,8 @@ def get_languages_dict():
  
 
 def get_langs_to_translate(lang_dirs, dict):
-    """ Regresas una lista carpetas contenidas en './tl' que pueden ser traducidas
-    """
+    """ Regresas una lista carpetas contenidas en './tl' que pueden 
+    ser traducidas """
     for lang in lang_dirs:
         try:
             l = dict[lang]
@@ -112,12 +112,26 @@ def get_langs_to_translate(lang_dirs, dict):
     return lang_dirs
 
 
-def translate_file(origin_file, output_file, from_l, to_l):
-    """ traducir un archivo a otro idioma
-    """
+def get_files_by_type(path, ext):
+    """ regresa una lista con las rutas de los archivos de la 
+    extención especificada """
+    file_list = [ ]
+ 
+    for dir_name, dirs, files in os.walk(path):
+        #print("directorio encontrado: %s" % dir_name)
+        
+        for file_name in files:
+            name, ext = os.path.splitext(file_name)
+            if ext == '.rpy':
+                file_list.append(os.path.join(dir_name, file_name))
+    return file_list
 
+
+def translate_file(origin_file, from_l, to_l):
+    """ traducir un archivo a otro idioma """
     input_file = open(origin_file, 'rt', encoding='utf-8')
-    output_file = open(output_file, 'wt', encoding='utf-8')
+    output_name = origin_file.replace('tl', 'tl_output')
+    output_file = open(output_name, 'wt', encoding='utf-8')
 
     translate_flag = False
     translated_line = ''
@@ -182,7 +196,9 @@ def main():
     ## ** creación de las subcarpetas en tr_output:
     for dir in lang_dirs:
         try:
-            os.mkdir(os.path.join(WORK_PATH, OUTPUT_DIR, dir))
+            src = os.path.join(WORK_PATH, TRANSLATE_DIR, dir)
+            dst = os.path.join(WORK_PATH, OUTPUT_DIR, dir)
+            shutil.copytree(src, dst, ignore=shutil.ignore_patterns('*.*')) # , dirs_exist_ok=True 
         except FileExistsError:
             print('Cannot create a file that already exists')
 
@@ -190,20 +206,22 @@ def main():
     # ** traduccion del archivo common.rpy **
     for lang in lang_dirs:
         # lista de archivos con extención '.rpy'
-        file_list = [ ]
-        for file_name in os.listdir(os.path.join(WORK_PATH, TRANSLATE_DIR, lang)):
-            if file_name.endswith('.rpy'):
-                file_list.append(file_name)
+        # file_list = [ ]
+        # for file_name in os.listdir(os.path.join(WORK_PATH, TRANSLATE_DIR, lang)):
+        #     if file_name.endswith('.rpy'):
+        #         file_list.append(file_name)
+
+        file_list = get_files_by_type(os.path.join(WORK_PATH, TRANSLATE_DIR, lang), '.rpy')
 
         for file_name in file_list:
             input_file = os.path.join(WORK_PATH, TRANSLATE_DIR, lang, file_name)
-            output_file = os.path.join(WORK_PATH, OUTPUT_DIR, lang, file_name)
+            #output_file = os.path.join(WORK_PATH, OUTPUT_DIR, lang, file_name)
             print('translating', os.path.join(lang, file_name))
             if file_name == 'common.rpy':
                 # el archivo 'common.rpy' siempre se traduce del inlgés.
-                translate_file(input_file, output_file, 'en', langs_dict[lang])
+                translate_file(input_file, 'en', langs_dict[lang])
             else:
-                translate_file(input_file, output_file ,source_language, langs_dict[lang])
+                translate_file(input_file, source_language, langs_dict[lang])
 
     print('Done.')
 
