@@ -33,23 +33,24 @@
 #       $ pip install pycontry
 
 # When your project is complete then use this script.
-# Step 1. Check spelling and syntax.
+# Step 1. Check the spelling of your project
 # Step 2. Generate the translation files with the Ren'Py launcher,
 #         language names must be lowercase.
 # Step 3. Make a copy of this file in the game folder of your project.
 # step 4. Open a prompt in the game folder of your project and run this file
 #               $ python auto_translate.py [language]
 #         where [language] is the ISO 639-1 code of the language of your project in lowercase.
-# Step 5. You will find the traditions in the 'tl_output' folder, check the 
-#         traditions and make the pertinent changes, replace the translations
+# Step 5. You will find the translations files in the 'tl_output' folder, check the 
+#         translations and make the pertinent changes, replace the translations files
 #         in the 'tl' folder.
 # Step 6. Remove this script from your project
 
-# NOTE: esta es una liga donde se encuentrasn los idiomas y sus códigoas ISO639-1
+# NOTE: This is a link where you can find the languages and their ISO639-1 codes
 # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
 
 
 # *** Imports ***
+from multiprocessing.forkserver import read_signed
 import os
 import re
 import pycountry
@@ -67,16 +68,22 @@ TRANSLATE_DIR = 'tl'
 # directorio de salida
 OUTPUT_DIR = 'tl_output'
 
-
-
-
+# esta expresión regular encuentra lineas de tradución en los archivos de la carpeta './tl'
 REGEX_UTIL = r'#\s.*\s".*"'
 
 
 # *** Funciones ***
 
+def argument_paser():
+    """ parseo desde linea de instruciones """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('source_lang')
+    args = parser.parse_args()
+
+    return args
+
 def get_languages_dict():
-    """ Diccionario python de idiomas 
+    """ Diccionario de idiomas 
     { 'idioma' : 'ISO639-1' }
     """
     # primero obtenemos los valores, las claves ISO
@@ -92,10 +99,10 @@ def get_languages_dict():
     langs_dict = { k:v for (k,v) in zip(keys, values) }
 
     return langs_dict
-
+ 
 
 def get_langs_to_translate(lang_dirs, dict):
-    """ Regresas una lista carpetas en contenidas en './tl que pueden ser traducidas'
+    """ Regresas una lista carpetas contenidas en './tl' que pueden ser traducidas
     """
     for lang in lang_dirs:
         try:
@@ -110,19 +117,19 @@ def translate_file(origin_file, output_file, from_l, to_l):
     """ traducir un archivo a otro idioma
     """
 
-    file_obj_entrada = open(origin_file, 'rt', encoding='utf-8')
-    file_obj_salida = open(output_file, 'wt', encoding='utf-8')
+    input_file = open(origin_file, 'rt', encoding='utf-8')
+    output_file = open(output_file, 'wt', encoding='utf-8')
 
     translate_flag = False
     translated_line = ''
 
-    for line in file_obj_entrada:
+    for line in input_file:
 
         if translate_flag:
-            translated_line = '"'+ translated_line + '"'
+            translated_line = '"' + translated_line + '"'
             
             line_ = line.replace('""', translated_line)
-            file_obj_salida.write(line_)
+            output_file.write(line_)
             translate_flag = False
         elif line.startswith('    old ') or re.search(REGEX_UTIL, line) is not None:
             split_list = line.split('"')
@@ -136,27 +143,27 @@ def translate_file(origin_file, output_file, from_l, to_l):
                 translated_line = line_to_translate
                 # print('The string "', line_to_translate, '" no did not change', sep='')
             
-            file_obj_salida.write(line)
+            output_file.write(line)
             translate_flag = True
         else:
-            file_obj_salida.write(line)
+            output_file.write(line)
         
-    file_obj_entrada.close()
-    file_obj_salida.close()
+    input_file.close()
+    output_file.close()
 
 
 def main():
     """ funcion principal """
     ## *** parseo desde linea de instruciones ***
-    parser = argparse.ArgumentParser()
-    parser.add_argument('source_lang')
-    args = parser.parse_args()
+    args = argument_paser()
 
-    # idioma de origen (de momentos intruduccion manual)
+    # idioma de origen
     source_language = str(args.source_lang)
+
 
     ## ** Obtenemos el diccionario de idiomas **
     langs_dict = get_languages_dict()
+
 
     ## ** Creacion de las carpetas que usa el script **
     try:
@@ -164,12 +171,14 @@ def main():
     except FileExistsError:
         print('Cannot create a file that already exists')
 
+
     ## ** Idiomas que se van a traducir **
     # lista de los directorios de idiomas a traducir
     lang_dirs = os.listdir(os.path.join(WORK_PATH, TRANSLATE_DIR))
 
     # retira los idiomas no soportados
     lang_dirs = get_langs_to_translate(lang_dirs, langs_dict)
+
 
     ## ** creación de las subcarpetas en tr_output:
     for dir in lang_dirs:
@@ -179,31 +188,23 @@ def main():
             print('Cannot create a file that already exists')
 
 
-
     # ** traduccion del archivo common.rpy **
     for lang in lang_dirs:
-        from_lang = 'english' # NOTE: en el caso del archivo common siempre se traduce desde el inglés
-        file_name = 'common.rpy'
-        ori_file = os.path.join(WORK_PATH, TRANSLATE_DIR, lang, file_name)
-        out_file = os.path.join(WORK_PATH, OUTPUT_DIR, lang, file_name)
-        print('translating', os.path.join(lang, lang, file_name))
-        translate_file(ori_file, out_file ,from_lang, langs_dict[lang])
+        # lista de archivos con extención '.rpy'
+        file_list = [ ]
+        for file_name in os.listdir(os.path.join(WORK_PATH, TRANSLATE_DIR, lang)):
+            if file_name.endswith('.rpy'):
+                file_list.append(file_name)
 
-    # por cada idioma
-    for lang in lang_dirs:
-        # lista de archivos sin archivo common.rpy y extención '.rpyc'
-        file_list = os.listdir(os.path.join(WORK_PATH, TRANSLATE_DIR, lang))
-        file_list.remove('common.rpy')
-        for file_name in  file_list:
-            if file_name.endswith('.rpyc'):
-                file_list.remove(file_name)
-        
-        # traducción por cada archivo
         for file_name in file_list:
-            ori_file = os.path.join(WORK_PATH, TRANSLATE_DIR, lang, file_name)
-            out_file = os.path.join(WORK_PATH, OUTPUT_DIR, lang, file_name)
+            input_file = os.path.join(WORK_PATH, TRANSLATE_DIR, lang, file_name)
+            output_file = os.path.join(WORK_PATH, OUTPUT_DIR, lang, file_name)
             print('translating', os.path.join(lang, file_name))
-            translate_file(ori_file, out_file ,source_language, langs_dict[lang])
+            if file_name == 'common.rpy':
+                # el archivo 'common.rpy' siempre se traduce del inlgés.
+                translate_file(input_file, output_file, 'en', langs_dict[lang])
+            else:
+                translate_file(input_file, output_file ,source_language, langs_dict[lang])
 
     print('Done.')
 
