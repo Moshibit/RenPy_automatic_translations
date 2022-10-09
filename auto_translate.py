@@ -117,9 +117,7 @@ def get_files_by_type(path, ext):
     extención especificada """
     file_list = [ ]
  
-    for dir_name, dirs, files in os.walk(path):
-        #print("directorio encontrado: %s" % dir_name)
-        
+    for dir_name, dirs, files in os.walk(path):     
         for file_name in files:
             name, ext = os.path.splitext(file_name)
             if ext == '.rpy':
@@ -205,17 +203,10 @@ def main():
 
     # ** traduccion del archivo common.rpy **
     for lang in lang_dirs:
-        # lista de archivos con extención '.rpy'
-        # file_list = [ ]
-        # for file_name in os.listdir(os.path.join(WORK_PATH, TRANSLATE_DIR, lang)):
-        #     if file_name.endswith('.rpy'):
-        #         file_list.append(file_name)
-
         file_list = get_files_by_type(os.path.join(WORK_PATH, TRANSLATE_DIR, lang), '.rpy')
 
         for file_name in file_list:
             input_file = os.path.join(WORK_PATH, TRANSLATE_DIR, lang, file_name)
-            #output_file = os.path.join(WORK_PATH, OUTPUT_DIR, lang, file_name)
             print('translating', os.path.join(lang, file_name))
             if file_name == 'common.rpy':
                 # el archivo 'common.rpy' siempre se traduce del inlgés.
