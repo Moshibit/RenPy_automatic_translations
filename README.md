@@ -8,7 +8,7 @@ requirements:
   
 ``` pip install textblob```
   
-  - pycontry 
+  - pycountry  
   
 ```pip install pycontry```
 
